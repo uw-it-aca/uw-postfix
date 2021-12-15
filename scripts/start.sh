@@ -6,6 +6,9 @@ then
   mkdir /var/spool/postfix/etc
 fi
 
-ln -s /var/spool/postfix/etc/services /etc/services
+if [ ! -e '/var/spool/postfix/etc/services' ]
+then
+    ln -s /etc/services /var/spool/postfix/etc/
+fi
 
 /usr/sbin/postfix start-fg
