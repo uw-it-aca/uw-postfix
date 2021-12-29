@@ -24,9 +24,11 @@ fi
 echo "config files: "
 ls -l /config
 
-echo "/cofig/main.cf"
-cat /config/main.cf
+echo "/etc/postfix/main.cf"
+cat /etc/postfix/main.cf
 
 
-echo "Starting postfix"
+echo "Starting postfix in foreground"
 /usr/sbin/postfix start-fg
+
+echo "Postfix finished ($?)"
