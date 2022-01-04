@@ -57,6 +57,17 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+      - name: Create Tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ needs.context.outputs.commit_hash }}",
+              sha: context.sha
+            })
+
       - name: Push Image to GCR
         if: github.event_name == 'push'
         uses: uw-it-aca/actions/gcr-push@main
