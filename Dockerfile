@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as uw-postfix
+FROM ubuntu:20.04 as uw-postfix
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
