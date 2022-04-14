@@ -39,6 +39,82 @@ done
 echo "config files: "
 ls -l $CONFIG_FILE_DIRECTORY
 
+# make sure /var/spool/postfix directories are initialized
+POSTFIX_SPOOL=/var/spool/postfix
+POSTFIX_DIRECTORIES=("active"
+                     "bounce"
+                     "corrupt"
+                     "defer"
+                     "deferred"
+                     "dev"
+                     "etc"
+                     "flush"
+                     "incoming"
+                     "lib"
+                     "maildrop"
+                     "pid"
+                     "private"
+                     "public"
+                     "saved"
+                     "usr")
+POSTFIX_ROOT_ROOT_ONLY=("dev"
+                        "etc"
+                        "lib"
+                        "pid")
+POSTFIX_POSTFIX_ROOT_ONLY=("active"
+                           "bounce"
+                           "corrupt"
+                           "defer"
+                           "deferred"
+                           "flush"
+                           "incoming"
+                           "private"
+                           "saved")
+POSTFIX_POSTDROP_MAILDROP=("maildrop"
+                  "public")
+POSTFIX_USR_SUBDIRS=("lib"
+                     "lib/sasl2"
+                     "lib/zoneinfo")
+for POSTFIX_DIR in ${POSTFIX_DIRECTORIES[*]}
+do
+    POSTFIX_DIR_PATH=${POSTFIX_SPOOL}/${POSTFIX_DIR}
+    if [[ ! -d $POSTFIX_DIR_PATH ]];
+    then
+        mkdir $POSTFIX_DIR_PATH
+        if [[ " ${POSTFIX_ROOT_ROOT_ONLY[*]} " =~ " $POSTFIX_DIR " ]];
+        then
+            chmod u=rwx,go=rx $POSTFIX_DIR_PATH
+        elif [[ " ${POSTFIX_POSTFIX_ROOT_ONLY[*]} " =~ " $POSTFIX_DIR " ]];
+        then
+            chown postfix $POSTFIX_DIR_PATH
+            chmod u=rwx,go= $POSTFIX_DIR_PATH
+        else
+            case $POSTFIX_DIR in
+                usr)
+                    chmod u=rwx,go=rx $POSTFIX_DIR_PATH
+                    for POSTFIX_USR_SUBDIR in ${POSTFIX_USR_SUBDIRS[*]}
+                    do
+                        POSTFIX_USR_SUBDIR_PATH=${POSTFIX_DIR_PATH}/${POSTFIX_USR_SUBDIR}
+                        mkdir $POSTFIX_USR_SUBDIR_PATH
+                        chmod u=rwx,go=rx $POSTFIX_USR_SUBDIR_PATH
+                    done
+                    ;;
+                 maildrop)
+                    chown postfix $POSTFIX_DIR_PATH
+                    chmod u=rwx,g=wx,+t $POSTFIX_DIR_PATH
+                    ;;
+                 public)
+                     chown postfix $POSTFIX_DIR_PATH
+                     chmod u=rwx,g+s,o= $POSTFIX_DIR_PATH
+                     ;;
+            esac
+        fi
+    fi
+done
+
+echo "Verify postfix configuration"
+/usr/sbin/postfix check
+
 echo "Starting postfix in foreground"
 /usr/sbin/postfix start-fg
 
