@@ -39,7 +39,7 @@ done
 echo "config files: "
 ls -l $CONFIG_FILE_DIRECTORY
 
-# make sure /var/spool/postfix directories are initialized
+# verify /var/spool/postfix directories
 POSTFIX_SPOOL=/var/spool/postfix
 POSTFIX_DIRECTORIES=("active"
                      "bounce"
@@ -78,37 +78,34 @@ POSTFIX_USR_SUBDIRS=("lib"
 for POSTFIX_DIR in ${POSTFIX_DIRECTORIES[*]}
 do
     POSTFIX_DIR_PATH=${POSTFIX_SPOOL}/${POSTFIX_DIR}
-    if [[ ! -d $POSTFIX_DIR_PATH ]];
+    mkdir -p $POSTFIX_DIR_PATH
+    if [[ " ${POSTFIX_ROOT_ROOT_ONLY[*]} " =~ " $POSTFIX_DIR " ]];
     then
-        mkdir $POSTFIX_DIR_PATH
-        if [[ " ${POSTFIX_ROOT_ROOT_ONLY[*]} " =~ " $POSTFIX_DIR " ]];
-        then
-            chmod u=rwx,go=rx $POSTFIX_DIR_PATH
-        elif [[ " ${POSTFIX_POSTFIX_ROOT_ONLY[*]} " =~ " $POSTFIX_DIR " ]];
-        then
-            chown postfix $POSTFIX_DIR_PATH
-            chmod u=rwx,go= $POSTFIX_DIR_PATH
-        else
-            case $POSTFIX_DIR in
-                usr)
-                    chmod u=rwx,go=rx $POSTFIX_DIR_PATH
-                    for POSTFIX_USR_SUBDIR in ${POSTFIX_USR_SUBDIRS[*]}
-                    do
-                        POSTFIX_USR_SUBDIR_PATH=${POSTFIX_DIR_PATH}/${POSTFIX_USR_SUBDIR}
-                        mkdir $POSTFIX_USR_SUBDIR_PATH
-                        chmod u=rwx,go=rx $POSTFIX_USR_SUBDIR_PATH
-                    done
-                    ;;
-                 maildrop)
-                    chown postfix $POSTFIX_DIR_PATH
-                    chmod u=rwx,g=wx,+t $POSTFIX_DIR_PATH
-                    ;;
-                 public)
-                     chown postfix $POSTFIX_DIR_PATH
-                     chmod u=rwx,g+s,o= $POSTFIX_DIR_PATH
-                     ;;
-            esac
-        fi
+        chmod u=rwx,go=rx $POSTFIX_DIR_PATH
+    elif [[ " ${POSTFIX_POSTFIX_ROOT_ONLY[*]} " =~ " $POSTFIX_DIR " ]];
+    then
+        chown postfix $POSTFIX_DIR_PATH
+        chmod u=rwx,go= $POSTFIX_DIR_PATH
+    else
+        case $POSTFIX_DIR in
+            usr)
+                chmod u=rwx,go=rx $POSTFIX_DIR_PATH
+                for POSTFIX_USR_SUBDIR in ${POSTFIX_USR_SUBDIRS[*]}
+                do
+                    POSTFIX_USR_SUBDIR_PATH=${POSTFIX_DIR_PATH}/${POSTFIX_USR_SUBDIR}
+                    mkdir -p $POSTFIX_USR_SUBDIR_PATH
+                    chmod u=rwx,go=rx $POSTFIX_USR_SUBDIR_PATH
+                done
+                ;;
+             maildrop)
+                chown postfix $POSTFIX_DIR_PATH
+                chmod u=rwx,g=wx,+t $POSTFIX_DIR_PATH
+                ;;
+             public)
+                 chown postfix $POSTFIX_DIR_PATH
+                 chmod u=rwx,g+s,o= $POSTFIX_DIR_PATH
+                 ;;
+        esac
     fi
 done
 
