@@ -15,11 +15,23 @@ then
   mkdir /var/spool/postfix/etc
 fi
 
-if [ ! -e '/var/spool/postfix/etc/services' ]
-then
-    echo "exec: ln -s /etc/services /var/spool/postfix/etc/"
-    ln -s /etc/services /var/spool/postfix/etc/
-fi
+POSTFIX_SPOOL=/var/spool/postfix
+
+echo "copy system files to chroot'd dir"
+SYS_FILES=("/etc/resolv.conf"
+           "/etc/services")
+for SYS_FILE in ${SYS_FILES[*]}
+do
+  SYS_FILE_DEST=${POSTFIX_SPOOL}${SYS_FILE}
+  # be sure they're fresh
+  if [ -e ${SYS_FILE_DEST} ]
+  then
+      echo "exec: rm ${SYS_FILE_DEST}"
+      rm ${SYS_FILE_DEST}
+  fi
+  echo "exec: cp -p ${SYS_FILE} ${SYS_FILE_DEST}"
+  cp -p ${SYS_FILE} ${SYS_FILE_DEST}
+done
 
 CONFIG_FILE_DIRECTORY=/config
 CONFIG_TEMPLATE_EXTENSION=tpl
@@ -40,7 +52,6 @@ echo "config files: "
 ls -l $CONFIG_FILE_DIRECTORY
 
 # verify /var/spool/postfix directories
-POSTFIX_SPOOL=/var/spool/postfix
 POSTFIX_DIRECTORIES=("active"
                      "bounce"
                      "corrupt"
