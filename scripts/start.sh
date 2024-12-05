@@ -36,7 +36,6 @@ done
 CONFIG_FILE_DIRECTORY=/config
 CONFIG_TEMPLATE_EXTENSION=tpl
 CONFIG_FILE_EXTENSION=cf
-# don't substitute missing ENV vars, they are for postfix to substitute.  
 echo "processing templates in ${CONFIG_FILE_DIRECTORY}:"
 for CFG_TEMPLATE_IN in $(echo ${CONFIG_FILE_DIRECTORY}/*.${CONFIG_TEMPLATE_EXTENSION})
 do
@@ -131,6 +130,9 @@ do
         esac
     fi
 done
+
+echo "set stdout permission"
+chmod ugo+rw /dev/stdout
 
 echo "Verify postfix configuration"
 /usr/sbin/postfix check
