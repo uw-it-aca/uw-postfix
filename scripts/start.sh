@@ -131,6 +131,9 @@ do
     fi
 done
 
+echo "set stdout permission"
+chmod ugo+rw /dev/stdout
+
 echo "Verify postfix configuration"
 /usr/sbin/postfix check
 
